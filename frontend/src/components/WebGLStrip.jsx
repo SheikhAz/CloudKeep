@@ -133,10 +133,12 @@ function build(wrap, opts) {
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
 
-  const clock = new THREE.Clock();
+  let last = performance.now();
   let raf;
   const tick = () => {
-    const dt = Math.min(clock.getDelta(), 0.05);
+    const now = performance.now();
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
     if (!dragging) target += drift * dt * 60;
     const prev = current;
     current += (target - current) * 0.075;

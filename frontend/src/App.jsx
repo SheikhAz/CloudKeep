@@ -53,10 +53,15 @@ function Chrome() {
   return (
     <div className="chrome">
       <p className="chrome-tag" aria-hidden="true">
-        <span>It&rsquo;s <a href="" class= "azzy"> Azz&rsquo;y</a> </span>
+        <span>
+          It&rsquo;s{' '}
+          <a href="https://www.instagram.com/sheikhazmatulla03/" target="_blank" rel="noreferrer" className="azzy">
+            Azz&rsquo;y
+          </a>
+        </span>
       </p>
 
-      <Link to="/" className="logo" aria-label="Meech213 — home">
+      <Link to="/" className="logo" aria-label="Cloud Keeper — home">
         <span className="logo-num">Cloud</span>
         <span className="logo-pill">Keeper</span>
       </Link>
@@ -67,25 +72,25 @@ function Chrome() {
       </ul>
 
       <p className="chrome-copy">© All rights reserved. 2026</p>
-      <p className="chrome-credit">Site by <a href="" class = "azzy">Azzy </a></p>
+      <p className="chrome-credit">
+        Site by{' '}
+        <a href="https://www.instagram.com/sheikhazmatulla03/" target="_blank" rel="noreferrer" className="azzy">
+          Azzy
+        </a>
+      </p>
     </div>
   );
 }
 
-/* ---------------- dial nav with clock hands ----------------
-   Labels sit on an ellipse around the pivot (measured from the reference:
-   234px wide, 155px tall). The ACTIVE page always sits in the right slot,
-   the others follow in order — same label size, same gap, every page.
-   Angles are parametric: 0° = right, 90° = straight up.
-   Slot 0 = active, slot 1 = top, slot 2 = left.                          */
+/* ---------------- dial nav with clock hands ---------------- */
 const DIAL_A = 234;
 const DIAL_B = 155;
 const SLOTS = [38, 90, 142];
 
 const ITEMS = [
-  { id: 'home',  label: 'Home',  to: '/' },
+  { id: 'home',  label: 'Home',     to: '/' },
   { id: 'photo', label: 'Document', to: '/photo' },
-  { id: 'about', label: 'About', to: '/about' },
+  { id: 'about', label: 'About',    to: '/about' },
 ];
 const N = ITEMS.length;
 
@@ -105,7 +110,6 @@ function DialNav() {
   const tRef = useRef(Object.fromEntries(ITEMS.map((it, i) => [it.id, slotOf(i, idx)])));
   const [, force] = useState(0);
 
-  /* scale the whole dial with the viewport so size + gaps stay proportional */
   const [scale, setScale] = useState(1);
   useEffect(() => {
     const fit = () => {
@@ -113,11 +117,11 @@ function DialNav() {
       const h = window.innerHeight;
       setScale(
         w <= 700
-          ? Math.min(0.6, Math.max(0.36, w / 820))   /* phones: ~0.46 at 375px wide */
+          ? Math.min(0.6, Math.max(0.36, w / 820))
           : Math.min(1, Math.max(0.55, Math.min(w / 1920, h / 920)))
       );
     };
-    fit();                                            /* run once on load */
+    fit();
     window.addEventListener('resize', fit);
     window.addEventListener('orientationchange', fit);
     return () => {
@@ -127,7 +131,6 @@ function DialNav() {
   }, []);
 
   useEffect(() => {
-    /* +1 = moved forward in the menu (clockwise), -1 = backward (counter-clockwise) */
     const step = ((idx - prevIdx.current + N + 1) % N) - 1;
     prevIdx.current = idx;
 
@@ -137,7 +140,6 @@ function DialNav() {
     ITEMS.forEach(({ id }, i) => {
       to[id] = slotOf(i, idx);
       const d = (((to[id] - from[id]) % 360) + 360) % 360;
-      /* every label turns the same way, like a real dial */
       delta[id] = step > 0 ? (d === 0 ? 0 : d - 360) : d;
     });
 
@@ -157,7 +159,6 @@ function DialNav() {
     return () => cancelAnimationFrame(raf);
   }, [idx]);
 
-  /* clock hands follow the ACTIVE label */
   const act = place(tRef.current[page]);
   const actR = Math.hypot(act.x, act.y);
   const deg = (Math.atan2(act.x, act.y) * 180) / Math.PI;
@@ -169,7 +170,6 @@ function DialNav() {
       <span className="dial-dot" aria-hidden="true" />
       {ITEMS.map(({ id, label, to }) => {
         const { x, y } = place(tRef.current[id]);
-        /* a label sweeping underneath the pivot fades out instead of poking off-screen */
         const o = Math.max(0, Math.min(1, (y - 20) / 50));
         return (
           <Link
@@ -189,6 +189,7 @@ function DialNav() {
     </nav>
   );
 }
+
 /* ---------------- app ---------------- */
 function Pages() {
   const { path } = useRouter();
@@ -207,7 +208,6 @@ export default function App() {
     <RouterProvider>
       {!entered && <Landing onEnter={() => setEntered(true)} />}
 
-      {/* the site mounts hidden so it preloads underneath, revealed on enter */}
       <div className={`site-shell ${entered ? 'is-in' : ''}`} aria-hidden={!entered}>
         <Chrome />
         <Pages />

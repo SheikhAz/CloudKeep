@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import LandingFX from './LandingFX.jsx';
-
+import LoopVideo from './LoopVideo.jsx';
 /* ---- edit the copy here ---- */
-const BRAND = 'Cloud Keeper';
-const META = 'Est. 2026';
 const EYEBROW = 'Photos · Documents · Memories';
 const TITLE = [
   { text: 'Your world,' },
@@ -47,22 +44,14 @@ export default function Landing({ onEnter }) {
   const rootRef = useRef(null);
   const videoRef = useRef(null);
   const cursorRef = useRef(null);
+  const startRef = useMagnetic();
   const loginRef = useMagnetic();
   const signRef = useMagnetic();
   const [ready, setReady] = useState(false);     /* video buffered — fade in */
   const [leaving, setLeaving] = useState(false); /* exit transition running */
-  const [shown, setShown] = useState(false);     /* intro animation started */
-
-  /* autoplay can reject on some browsers — retry once on first tap */
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const tryPlay = () => v.play().catch(() => {});
-    tryPlay();
-    const onTouch = () => { tryPlay(); window.removeEventListener('pointerdown', onTouch); };
-    window.addEventListener('pointerdown', onTouch);
-    return () => window.removeEventListener('pointerdown', onTouch);
-  }, []);
+  const [shown, setShown] = useState(false);     /* intro (Get Started) animation */
+  const [started, setStarted] = useState(false); /* Get Started clicked — build the content */
+  const [awake, setAwake] = useState(false);     /* cursor moved / screen touched — keep Get Started visible */
 
   /* start the intro one frame after mount so the CSS transitions actually run */
   useEffect(() => {
@@ -94,49 +83,56 @@ export default function Landing({ onEnter }) {
     };
   }, []);
 
-  const enter = () => {
+  /* bring "Get Started" back on any cursor move / touch / key press */
+  useEffect(() => {
+    const wake = () => setAwake(true);
+    const events = ['pointermove', 'pointerdown', 'touchstart', 'keydown'];
+    events.forEach((ev) => window.addEventListener(ev, wake, { passive: true }));
+    return () => events.forEach((ev) => window.removeEventListener(ev, wake));
+  }, []);
+
+  const start = (e) => {
+    e.currentTarget.blur();
+    setStarted(true);
+  };
+
+  const enter = (e) => {
     if (leaving) return;
+    e.currentTarget.blur();
     setLeaving(true);
-    setTimeout(onEnter, 650); /* matches the CSS fade duration */
+    setTimeout(onEnter, 650);
   };
 
   return (
     <div
       ref={rootRef}
-      className={`landing ${ready ? 'is-ready' : ''} ${leaving ? 'is-leaving' : ''} ${shown ? 'is-in' : ''}`}
+      className={`landing ${ready ? 'is-ready' : ''} ${leaving ? 'is-leaving' : ''} ${shown ? 'is-in' : ''} ${started ? 'is-started' : ''} ${awake ? 'is-awake' : ''}`}
     >
       {/* media attribute = the browser downloads ONLY the matching source */}
-      <video
-        ref={videoRef}
-        className="landing-video"
-        muted
-        playsInline
-        autoPlay
-        loop
-        preload="auto"
-        disablePictureInPicture
-        onCanPlay={() => setReady(true)}
-        aria-hidden="true"
-      >
-        <source src="/videos/landing-mobile.mp4" media="(max-width: 700px)" type="video/mp4" />
-        <source src="/videos/landing-desktop.mp4" type="video/mp4" />
-      </video>
+      <LoopVideo onReady={() => setReady(true)} />
 
-      {/* three.js particles + rings, drawn on top of the video */}
-      <LandingFX leaving={leaving} />
-
+      <div className="landing-vignette" aria-hidden="true" />
       <div className="landing-scrim" aria-hidden="true" />
       <div className="landing-grain" aria-hidden="true" />
-      <div className="landing-frame" aria-hidden="true"><i /><i /><i /><i /></div>
+      <div className="landing-beam" aria-hidden="true" />
 
-      <header className="landing-top reveal">
-        <span className="landing-mark">{BRAND}</span>
-        <span className="landing-meta">{META}</span>
-      </header>
+      {/* step 1: only this is visible on arrival */}
+      <div className="landing-start" aria-hidden={started}>
+        <button
+          ref={startRef}
+          type="button"
+          className="landing-btn landing-btn-solid"
+          onClick={start}
+          tabIndex={started ? -1 : 0}
+        >
+          <span>Get Started</span><Arrow />
+        </button>
+      </div>
 
-      <div className="landing-ui">
+      {/* step 2: builds in after Get Started */}
+      <div className="landing-ui" aria-hidden={!started}>
         <div className="landing-head">
-          <p className="landing-eyebrow reveal" style={{ '--d': '.25s' }}>{EYEBROW}</p>
+          <p className="landing-eyebrow reveal" style={{ '--d': '.35s' }}>{EYEBROW}</p>
           <h1 className="landing-title" aria-label={TITLE.map((l) => l.text).join(' ')}>
             {TITLE.map((l, i) => (
               <span className="line" key={i} aria-hidden="true">
@@ -149,20 +145,30 @@ export default function Landing({ onEnter }) {
         </div>
 
         <div className="landing-aside">
-          <p className="landing-text reveal" style={{ '--d': '.85s' }}>{TEXT}</p>
+          <p className="landing-text reveal" style={{ '--d': '1.15s' }}>{TEXT}</p>
 
-          <div className="landing-actions reveal" style={{ '--d': '1s' }}>
-            <button ref={loginRef} type="button" className="landing-btn landing-btn-solid" onClick={enter}>
+          <div className="landing-actions">
+            <button
+              ref={loginRef}
+              type="button"
+              className="landing-btn landing-btn-solid reveal"
+              style={{ '--d': '1.4s' }}
+              onClick={enter}
+              tabIndex={started ? 0 : -1}
+            >
               <span>Login</span><Arrow />
             </button>
-            <button ref={signRef} type="button" className="landing-btn landing-btn-ghost" onClick={enter}>
+            <button
+              ref={signRef}
+              type="button"
+              className="landing-btn landing-btn-ghost reveal"
+              style={{ '--d': '1.55s' }}
+              onClick={enter}
+              tabIndex={started ? 0 : -1}
+            >
               <span>Sign Up</span>
             </button>
           </div>
-
-          <button type="button" className="landing-skip reveal" style={{ '--d': '1.15s' }} onClick={enter}>
-            Enter site
-          </button>
         </div>
       </div>
 
