@@ -1,0 +1,188 @@
+.landing {
+  --l-serif: 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
+  --l-sans: 'Manrope', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --l-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+/* ---- heading ---- */
+.landing-title {
+  font-family: var(--l-serif);
+  font-weight: 400;
+  font-size: clamp(48px, 6.4vw, 120px);
+  line-height: .98;
+  letter-spacing: -.025em;
+}
+.landing-title em {
+  font-style: italic;
+  color: var(--accent);
+  text-shadow: 0 0 48px rgba(var(--accent-rgb), .4);
+}
+
+/* ---- right side: block pinned to the right edge ---- */
+.landing-ui {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 540px);
+  column-gap: 4vw;
+}
+
+.landing-card {
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  text-align: right;
+}
+
+/* paragraph: monospace, matches the ASCII background */
+.landing-text {
+  display: block;
+  max-width: 460px;
+  margin: 0 0 26px auto;
+  font-family: var(--l-mono);
+  font-weight: 400;
+  font-size: clamp(12px, .95vw, 14px);
+  line-height: 1.8;
+  letter-spacing: .01em;
+  color: rgba(245, 244, 241, .78);
+}
+/* =====================================================
+   LANDING — typewriter reveal after "Begin"
+   ===================================================== */
+
+/* don't clip italics, glow or caret */
+.landing-title .line { overflow: visible; }
+
+/* screen-reader copy of the paragraph (the visible one is typed) */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- characters: pre-rendered at opacity 0 (layout never shifts),
+   revealed by adding .on — opacity only, fully GPU-friendly ---- */
+.tw-ch { opacity: 0; }
+.tw-ch.on {
+  opacity: 1;
+  animation: twIn .34s ease-out;
+}
+.landing-title .tw-ch.on { animation-duration: .5s; }
+
+@keyframes twIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- caret: ONE element, moved in the DOM as typing advances ---- */
+.tw-caret { position: relative; }
+.tw-caret::after {
+  content: '';
+  position: absolute;
+  left: .05em;
+  top: 50%;
+  width: max(2px, .04em);
+  height: .86em;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), .75);
+  animation: twBlink 1.05s steps(1, end) infinite;
+}
+.landing-text .tw-caret::after { width: 2px; height: 1.1em; }
+
+@keyframes twBlink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+@keyframes twCaretOut { from { opacity: 1; } to { opacity: 0; } }
+
+.landing.is-done .tw-caret::after { animation: twCaretOut .5s ease forwards; }
+
+/* ---- buttons: arrive after the last character (no blur — composited only) ---- */
+.landing-actions .landing-btn {
+  opacity: 0;
+  translate: 0 18px;
+  scale: .96;
+  pointer-events: none;
+  transition:
+    transform .5s cubic-bezier(.2, .8, .2, 1),
+    color .3s ease,
+    border-color .3s ease,
+    opacity .7s ease var(--d, 0s),
+    translate .9s cubic-bezier(.16, 1, .3, 1) var(--d, 0s),
+    scale .9s cubic-bezier(.16, 1, .3, 1) var(--d, 0s);
+}
+.landing.is-done .landing-actions .landing-btn {
+  opacity: 1;
+  translate: none;
+  scale: 1;
+  pointer-events: auto;
+}
+
+/* ---- reduced motion: everything appears at once ---- */
+@media (prefers-reduced-motion: reduce) {
+  .tw-ch.on { animation: none; }
+  .tw-caret::after { animation: none; opacity: 0; }
+  .landing-actions .landing-btn { translate: none; scale: 1; }
+}
+/* ---- buttons: arrive after the last character ---- */
+.landing-actions .landing-btn {
+  opacity: 0;
+  translate: 0 22px;
+  scale: .94;
+  filter: blur(8px);
+  pointer-events: none;
+  transition:
+    transform .5s cubic-bezier(.2, .8, .2, 1),
+    color .3s ease,
+    border-color .3s ease,
+    opacity .8s ease var(--d, 0s),
+    translate 1s cubic-bezier(.16, 1, .3, 1) var(--d, 0s),
+    scale 1s cubic-bezier(.16, 1, .3, 1) var(--d, 0s),
+    filter .8s ease var(--d, 0s);
+}
+.landing.is-done .landing-actions .landing-btn {
+  opacity: 1;
+  translate: none;
+  scale: 1;
+  filter: none;
+  pointer-events: auto;
+}
+
+/* ---- reduced motion: text appears at once, buttons just fade ---- */
+@media (prefers-reduced-motion: reduce) {
+  .tw-ch,
+  .landing-title .tw-ch { animation: none; }
+  .tw-caret::after { animation: none; opacity: 0; }
+  .landing-actions .landing-btn { translate: none; scale: 1; filter: none; }
+}
+/* ---- buttons: pill style, aligned to the right ---- */
+.landing-actions {
+  gap: 12px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+.landing-actions .landing-btn { flex: 0 0 auto; min-width: 150px; }
+
+.landing-btn {
+  min-height: 52px;
+  padding: 16px 30px;
+  font-family: var(--l-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: none;
+  border-radius: 999px;
+}
+.landing-start .landing-btn { min-width: 170px; min-height: 0; padding: 16px 30px; border-radius: 999px; }
+.landing-start::before { width: 170px; border-radius: 999px; }
+
+/* ---- phones ---- */
+@media (max-width: 760px) {
+  .landing-ui { grid-template-columns: 1fr; }
+  .landing-title { font-size: clamp(44px, 13.5vw, 68px); }
+  .landing-card { text-align: left; }
+  .landing-text { margin: 0 0 20px; font-size: 13px; }
+  .landing-actions { justify-content: stretch; }
+  .landing-actions .landing-btn { flex: 1; min-width: 0; min-height: 52px; padding: 14px 12px; }
+}
