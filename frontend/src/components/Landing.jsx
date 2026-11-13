@@ -71,7 +71,7 @@ const Arrow = () => (
   </svg>
 );
 
-export default function Landing({ onEnter }) {
+export default function Landing({ onLogin, onSignup }) {
   const rootRef = useRef(null);
   const cursorRef = useRef(null);
   const caretRef = useRef(null);
@@ -84,7 +84,6 @@ export default function Landing({ onEnter }) {
   const signRef = useMagnetic();
 
   const [ready, setReady] = useState(false);
-  const [leaving, setLeaving] = useState(false);
   const [shown, setShown] = useState(false);
   const [started, setStarted] = useState(false);
   const [awake, setAwake] = useState(false);
@@ -182,11 +181,9 @@ export default function Landing({ onEnter }) {
     finish();
   };
 
-  const enter = (e) => {
-    if (leaving) return;
+  const go = (e, fn) => {
     e.currentTarget.blur();
-    setLeaving(true);
-    setTimeout(onEnter, 650);
+    fn();
   };
 
   const setChar = (index) => (el) => { charEls.current[index] = el; };
@@ -195,7 +192,7 @@ export default function Landing({ onEnter }) {
     <div
       ref={rootRef}
       onClick={skip}
-      className={`landing ${ready ? 'is-ready' : ''} ${leaving ? 'is-leaving' : ''} ${shown ? 'is-in' : ''} ${started ? 'is-started' : ''} ${awake ? 'is-awake' : ''} ${done ? 'is-done' : ''}`}
+      className={`landing ${ready ? 'is-ready' : ''}${shown ? 'is-in' : ''} ${started ? 'is-started' : ''} ${awake ? 'is-awake' : ''} ${done ? 'is-done' : ''}`}
     >
       <Background onReady={onReady} />
 
@@ -251,7 +248,7 @@ export default function Landing({ onEnter }) {
               type="button"
               className="landing-btn landing-btn-solid"
               style={{ '--d': '0s' }}
-              onClick={enter}
+              onClick={(e) => go(e, onLogin)}
               tabIndex={done ? 0 : -1}
             >
               <span>Log in</span><Arrow />
@@ -261,7 +258,7 @@ export default function Landing({ onEnter }) {
               type="button"
               className="landing-btn landing-btn-ghost"
               style={{ '--d': '.14s' }}
-              onClick={enter}
+              onClick={(e) => go(e, onSignup)}
               tabIndex={done ? 0 : -1}
             >
               <span>Create account</span>

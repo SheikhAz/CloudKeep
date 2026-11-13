@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "three": "^0.187.0"
+    "three": "^0.187.0",
+    "three-rounded-box": "^0.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

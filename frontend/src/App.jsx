@@ -3,6 +3,7 @@ import Home from './pages/Home.jsx';
 import Photo from './pages/Photo.jsx';
 import About from './pages/About.jsx';
 import Landing from './components/Landing.jsx';
+import Auth from './components/Auth.jsx';
 
 /* ---------------- mini router ---------------- */
 const RouterContext = createContext({ path: '/', navigate: () => {} });
@@ -201,18 +202,45 @@ function Pages() {
   );
 }
 
+/* landing, or the auth pages, depending on the URL */
+function Gate({ onEnter }) {
+  const { path, navigate } = useRouter();
+  if (path === '/login' || path === '/signup') {
+    const mode = path === '/login' ? 'login' : 'signup';
+    return <Auth key={mode} mode={mode} navigate={navigate} onEnter={onEnter} />;
+  }
+  return (
+    <Landing
+      onLogin={() => navigate('/login')}
+      onSignup={() => navigate('/signup')}
+    />
+  );
+}
+
+function Shell({ entered }) {
+  const { path, navigate } = useRouter();
+
+  /* already inside the app but the URL says /login — send home */
+  useEffect(() => {
+    if (entered && (path === '/login' || path === '/signup')) navigate('/');
+  }, [entered, path, navigate]);
+
+  return (
+    <div className={`site-shell ${entered ? 'is-in' : ''}`} aria-hidden={!entered}>
+      <Chrome />
+      <Pages />
+      <DialNav />
+    </div>
+  );
+}
+
 export default function App() {
   const [entered, setEntered] = useState(false);
 
   return (
     <RouterProvider>
-      {!entered && <Landing onEnter={() => setEntered(true)} />}
-
-      <div className={`site-shell ${entered ? 'is-in' : ''}`} aria-hidden={!entered}>
-        <Chrome />
-        <Pages />
-        <DialNav />
-      </div>
+      {!entered && <Gate onEnter={() => setEntered(true)} />}
+      <Shell entered={entered} />
     </RouterProvider>
   );
 }
